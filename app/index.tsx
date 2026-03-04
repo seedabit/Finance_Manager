@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image
 } from "react-native";
 import { supabase } from "../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -52,7 +53,7 @@ export default function App() {
       if (session) {
         router.replace("/(tabs)");
       }
-    }); 
+    });
   }, []);
 
   return (
@@ -63,10 +64,7 @@ export default function App() {
       ]}
     >
       <View style={styles.header}>
-        <View style={[styles.title, { marginBottom: 80 }]}>
-          <Text style={[styles.h1, { color: "#4C86A8" }]}>U</Text>
-          <Text style={[styles.h1, { color: "#4C86A8" }]}>Bank</Text>
-        </View>
+        <Image source={require("../assets/images/logo2.png")} style={styles.logo} />
       </View>
 
       <View style={styles.subtitle}>
@@ -115,7 +113,7 @@ export default function App() {
 
       <View style={{ width: "100%", alignItems: "center", gap: 8 }}>
         <Text style={styles.h4}>Não tem uma conta?</Text>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => router.push("/cadastro")}>
           <Text style={styles.buttonText}>Cadastre-se</Text>
         </TouchableOpacity>
       </View>
@@ -134,6 +132,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     padding: 20,
+  },
+  logo: {
+    width: 250,
+    height: 90,
+    resizeMode: "contain",
   },
   header: {
     width: "100%",
@@ -165,7 +168,8 @@ const styles = StyleSheet.create({
   },
   formWrapper: {
     width: "100%",
-    marginVertical: 20,
+    marginTop: 20,
+    marginBottom: 40
   },
   form: {
     width: "100%",

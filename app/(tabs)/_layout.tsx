@@ -14,9 +14,9 @@ export default function TabLayout() {
           fontSize: 12,
           marginBottom: 5,
         },
-        // ESTILO DA NAVBAR (BASE)
+
         tabBarStyle: {
-          backgroundColor: "#548ca8", // Seu azul secundário
+          backgroundColor: "#548ca8",
           position: "absolute",
           bottom: 20,
           left: 20,
@@ -27,7 +27,7 @@ export default function TabLayout() {
           paddingBottom: 5,
           elevation: 5,
         },
-        // ESTILO DO ITEM ATIVO (CORREÇÃO DO RETÂNGULO)
+
         tabBarItemStyle: {
           borderRadius: 25, // Arredonda o fundo azul do item ativo
           marginHorizontal: 10, // Cria o recuo nas laterais para não encostar na borda da barra
@@ -44,13 +44,10 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <Ionicons name="home" size={24} color={color} />
           ),
-          tabBarActiveBackgroundColor: "#2979b0", // Seu azul primário
+          tabBarActiveBackgroundColor: "#2979b0",
         }}
       />
 
-      {/* IMPORTANTE: No seu VS Code o arquivo chama-se 'explore.tsx'. 
-        Renomeie o arquivo para 'cartoes.tsx' ou mude o name aqui para 'explore'
-      */}
       <Tabs.Screen
         name="cartoes"
         options={{

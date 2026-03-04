@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: "#fff",
     zIndex: 10,
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
   },
   headerLeft: {
     flexDirection: "row",
@@ -139,15 +140,15 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   mainCard: {
-    backgroundColor: "#2979b0", // Azul Primário
+    backgroundColor: "#548ca8", // Azul Secundário
     borderRadius: 35,
     padding: 30,
     minHeight: 420,
     elevation: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   cardHeader: {
     flexDirection: "row",

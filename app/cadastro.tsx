@@ -25,7 +25,7 @@ export default function App() {
   const [name, setName] = useState("");
 
   const handleSignUp = async () => {
-    if (!email || !password) {
+    if (!email || !password || !name) {
       Alert.alert("Erro", "Por favor, preencha todos os campos.");
       return;
     }

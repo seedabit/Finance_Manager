@@ -1,82 +1,129 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { Tabs } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: "#fff",
-        tabBarInactiveTintColor: "#d1d1d1",
-        tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontWeight: "bold",
-          fontSize: 12,
-          marginBottom: 5,
-        },
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Image
+            source={require("../../assets/images/logo.png")}
+            style={styles.logo}
+          />
+          <Text style={styles.userName}>Olá, Usuário.</Text>
+        </View>
+        <TouchableOpacity activeOpacity={0.7}>
+          <MaterialCommunityIcons
+            name="account-circle-outline"
+            size={45}
+            color="#000"
+          />
+        </TouchableOpacity>
+      </View>
 
-        tabBarStyle: {
-          backgroundColor: "#548ca8",
-          position: "absolute",
-          bottom: 20,
-          left: 20,
-          right: 20,
-          borderRadius: 35,
-          height: 70,
-          borderTopWidth: 0,
-          paddingBottom: 5,
-          elevation: 5,
-        },
-
-        tabBarItemStyle: {
-          borderRadius: 25, // Arredonda o fundo azul do item ativo
-          marginHorizontal: 10, // Cria o recuo nas laterais para não encostar na borda da barra
-          marginVertical: 8, // Cria o recuo em cima/baixo para não encostar
-          height: 55, // Altura fixa para caber dentro dos 70px da barra
-          overflow: "hidden", // Garante que o fundo arredondado não ultrapasse os limites do item
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Início",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={24} color={color} />
-          ),
-          tabBarActiveBackgroundColor: "#2979b0",
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: "#fff",
+          tabBarInactiveTintColor: "#d1d1d1",
+          tabBarShowLabel: true,
+          tabBarStyle: styles.tabBar,
+          tabBarItemStyle: styles.tabBarItem,
+          tabBarLabelStyle: { fontWeight: "bold", fontSize: 12 },
         }}
-      />
-
-      <Tabs.Screen
-        name="cartoes"
-        options={{
-          title: "Cartões",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons
-              name="credit-card"
-              size={24}
-              color={color}
-            />
-          ),
-          tabBarActiveBackgroundColor: "#2979b0",
-        }}
-      />
-
-      <Tabs.Screen
-        name="detalhes"
-        options={{
-          title: "Detalhes",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons
-              name="swap-vertical"
-              size={24}
-              color={color}
-            />
-          ),
-          tabBarActiveBackgroundColor: "#2979b0",
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Início",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="home" size={24} color={color} />
+            ),
+            tabBarActiveBackgroundColor: "#2979b0",
+          }}
+        />
+        <Tabs.Screen
+          name="cartoes"
+          options={{
+            title: "Cartões",
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons
+                name="credit-card"
+                size={24}
+                color={color}
+              />
+            ),
+            tabBarActiveBackgroundColor: "#2979b0",
+          }}
+        />
+        <Tabs.Screen
+          name="detalhes"
+          options={{
+            title: "Detalhes",
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons
+                name="swap-vertical"
+                size={24}
+                color={color}
+              />
+            ),
+            tabBarActiveBackgroundColor: "#2979b0",
+          }}
+        />
+      </Tabs>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: "#fff",
+    zIndex: 10,
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  logo: {
+    width: 50,
+    height: 50,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  tabBar: {
+    backgroundColor: "#548ca8",
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    borderRadius: 35,
+    height: 75,
+    borderTopWidth: 0,
+    paddingBottom: 10,
+    paddingTop: 5,
+    boxShadow: "0px 10px 15px rgba(0, 0, 0, 0.1)",
+  },
+  tabBarItem: {
+    borderRadius: 30,
+    marginHorizontal: 8,
+    marginVertical: 5,
+    overflow: "hidden",
+  },
+});

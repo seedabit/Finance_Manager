@@ -1,5 +1,4 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import React from "react";
 import {
   ScrollView,
@@ -8,33 +7,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Image
-            source={require("../../assets/images/logo.png")}
-            style={styles.logo}
-          />
-
-          <Text style={styles.userName}>Olá, Usuário.</Text>
-        </View>
-        <TouchableOpacity activeOpacity={0.7}>
-          <MaterialCommunityIcons
-            name="account-circle-outline"
-            size={45}
-            color="#000"
-          />
-        </TouchableOpacity>
-      </View>
-
+    <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
+        {/* CARD DE PENDÊNCIAS */}
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
             <View>
@@ -87,7 +68,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -96,51 +77,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#fff",
-    zIndex: 10,
-    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  logoBox: {
-    width: 60,
-    height: 60,
-    borderWidth: 2,
-    borderColor: "#2979b0", // Azul Primário
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-  },
-  logo: {
-    width: 50,
-    height: 50,
-  },
-  logoText: {
-    fontSize: 28,
-    fontWeight: "900",
-    color: "#2979b0", // Azul Primário
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 20,
+
     paddingBottom: 120,
   },
   mainCard: {
-    backgroundColor: "#548ca8", // Azul Secundário
+    backgroundColor: "#2979b0", // Azul Primário
     borderRadius: 35,
     padding: 30,
     minHeight: 420,

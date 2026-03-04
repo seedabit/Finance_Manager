@@ -1,5 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -7,8 +8,24 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { supabase } from "../../lib/supabase";
 
 export default function HomeScreen() {
+  const [userName, setUserName] = React.useState("");
+
+  useEffect(() => {
+    const getUserName = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setUserName(user.user_metadata.display_name);
+      }
+    };
+
+    getUserName();
+  }, []);
+
   return (
     <View style={styles.container}>
       <ScrollView

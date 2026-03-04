@@ -3,8 +3,25 @@ import { Image } from "expo-image";
 import { Tabs } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { supabase } from "../../lib/supabase";
+import React, { useEffect } from "react";
 
 export default function TabLayout() {
+  const [userName, setUserName] = React.useState("");
+  
+    useEffect(() => {
+      const getUserName = async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          setUserName(user.user_metadata.display_name);
+        }
+      };
+  
+      getUserName();
+    }, []);
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
@@ -13,7 +30,7 @@ export default function TabLayout() {
             source={require("../../assets/images/logo.png")}
             style={styles.logo}
           />
-          <Text style={styles.userName}>Olá, Usuário.</Text>
+          <Text style={styles.userName}>Olá, {userName}.</Text>
         </View>
         <TouchableOpacity activeOpacity={0.7}>
           <MaterialCommunityIcons

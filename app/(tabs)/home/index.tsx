@@ -63,7 +63,7 @@ export default function HomeScreen() {
         <View style={styles.actionsRow}>
           <TouchableOpacity
             style={styles.actionItem}
-            onPress={() => router.push("/poupanca")}
+            onPress={() => router.push("../poupanca")}
           >
             <View style={styles.iconBox}>
               <MaterialCommunityIcons
@@ -77,7 +77,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             style={styles.actionItem}
-            onPress={() => router.push("/gastos_fixos")}
+            onPress={() => router.push("../gastos_fixos")}
           >
             <View style={styles.iconBox}>
               <MaterialCommunityIcons

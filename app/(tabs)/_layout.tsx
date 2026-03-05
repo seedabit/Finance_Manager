@@ -1,53 +1,69 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, Tabs } from "expo-router";
+import { router, Tabs, useFocusEffect } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 export default function TabLayout() {
   const [profile, setProfile] = useState({ full_name: "", avatar_url: "" });
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const fetchProfile = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (user) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("full_name, avatar_url")
-          .eq("id", user.id)
-          .single();
+    if (user) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", user.id)
+        .single();
 
-        if (data) {
-          setProfile({
-            full_name: data.full_name,
-            avatar_url: data.avatar_url,
-          });
-        }
+      if (data) {
+        setProfile({
+          full_name: data.full_name,
+          avatar_url: data.avatar_url,
+        });
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     fetchProfile();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, []),
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Image
-            source={require("../../assets/images/logo.png")}
-            style={styles.logo}
-          />
-          <Text style={styles.userName}>Olá, {profile.full_name.split(" ")[0]}.</Text>
+          <TouchableOpacity onPress={ () => {
+            router.push("/(tabs)");
+          }}>
+            <Image
+              source={require("../../assets/images/logo.png")}
+              style={styles.logo}
+            />
+          </TouchableOpacity>
+          <Text style={styles.userName}>
+            Olá,{" "}
+            {profile.full_name ? profile.full_name.split(" ")[0] : "Usuário"}.
+          </Text>
         </View>
-        <TouchableOpacity activeOpacity={0.7} onPress={ () => router.push("/user")}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/user")}
+        >
           {profile.avatar_url ? (
             <Image
               source={{
-                uri: `https://fbyjoqkxfckiaegypykn.supabase.co/storage/v1/object/public/avatars/${profile.avatar_url}`,
+                uri: `https://fbyjoqkxfckiaegypykn.supabase.co/storage/v1/object/public/avatars/${profile.avatar_url}?t=${Date.now()}`,
               }}
               style={{ width: 45, height: 45, borderRadius: 22.5 }}
             />

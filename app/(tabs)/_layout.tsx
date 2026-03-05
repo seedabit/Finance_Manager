@@ -122,6 +122,12 @@ export default function TabLayout() {
             href: null,
           }}
         />
+        <Tabs.Screen
+          name="poupanca"
+          options={{
+            href: null,
+          }}
+        />
       </Tabs>
     </SafeAreaView>
   );

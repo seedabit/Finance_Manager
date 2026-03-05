@@ -10,13 +10,16 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../../lib/supabase";
+import { useRouter } from "expo-router";
 
 export default function UserScreen() {
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState({ full_name: "", avatar_url: "" });
+  const router = useRouter();
 
   const fetchProfile = async () => {
     const {
@@ -65,7 +68,7 @@ export default function UserScreen() {
     const { error: uploadError } = await supabase.storage
       .from("avatars")
       .upload(filePath, decode(result.assets[0].base64!), {
-        contentType: `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`,
+        contentType: `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`,
         upsert: true,
       });
 
@@ -76,7 +79,8 @@ export default function UserScreen() {
 
     const { error: updateError } = await supabase.from("profiles").upsert({
       id: user.id,
-      full_name: profile.full_name || user.user_metadata.display_name || "Usuário",
+      full_name:
+        profile.full_name || user.user_metadata.display_name || "Usuário",
       avatar_url: filePath,
     });
 
@@ -87,6 +91,29 @@ export default function UserScreen() {
       fetchProfile();
     }
   };
+
+  const handleLogout = () => {
+  const logoutAction = async () => {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  };
+
+  if (Platform.OS === 'web') {
+    // Na Web usamos o confirm padrão do navegador
+    const confirmou = window.confirm("Tem certeza que deseja sair da conta?");
+    if (confirmou) logoutAction();
+  } else {
+    // No Mobile continuamos usando o Alert bonito do sistema
+    Alert.alert(
+      "Sair",
+      "Tem certeza que deseja sair da conta?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Sair", style: "destructive", onPress: logoutAction }
+      ]
+    );
+  }
+};
 
   return (
     <ScrollView
@@ -103,7 +130,13 @@ export default function UserScreen() {
               source={{
                 uri: `https://fbyjoqkxfckiaegypykn.supabase.co/storage/v1/object/public/avatars/${profile.avatar_url}?${Date.now()}`,
               }}
-              style={{ width: 120, height: 120, borderRadius: 60, borderColor: "#000", borderWidth: 2 }}
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                borderColor: "#1a5b8c",
+                borderWidth: 4,
+              }}
             />
           ) : (
             <MaterialCommunityIcons
@@ -116,6 +149,9 @@ export default function UserScreen() {
 
         <Text style={styles.h4}>{profile.full_name}</Text>
       </View>
+      <TouchableOpacity style={styles.button} onPress={handleLogout}>
+        <Text style={styles.buttonText}>Sair</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -128,6 +164,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 30,
   },
   text: {
     fontSize: 16,
@@ -155,5 +192,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     lineHeight: 24,
+  },
+  button: {
+    width: "100%",
+    height: 40,
+    backgroundColor: "#2374AB",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

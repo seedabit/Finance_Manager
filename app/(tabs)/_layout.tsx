@@ -44,7 +44,7 @@ export default function TabLayout() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={ () => {
-            router.push("/(tabs)");
+            router.push("/(tabs)/home");
           }}>
             <Image
               source={require("../../assets/images/logo.png")}
@@ -58,14 +58,14 @@ export default function TabLayout() {
         </View>
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.push("/user")}
+          onPress={() => router.push("/(tabs)/user")}
         >
           {profile.avatar_url ? (
             <Image
               source={{
                 uri: `https://fbyjoqkxfckiaegypykn.supabase.co/storage/v1/object/public/avatars/${profile.avatar_url}?t=${Date.now()}`,
               }}
-              style={{ width: 45, height: 45, borderRadius: 22.5 }}
+              style={{ width: 45, height: 45, borderRadius: 22.5, borderColor: "#1a5b8c", borderWidth: 2 }}
             />
           ) : (
             <MaterialCommunityIcons

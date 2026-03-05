@@ -1,9 +1,9 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, Tabs, useFocusEffect } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
-import React, { useState, useEffect, useCallback } from "react";
 
 export default function TabLayout() {
   const [profile, setProfile] = useState({ full_name: "", avatar_url: "" });
@@ -56,6 +56,10 @@ export default function TabLayout() {
             {profile.full_name ? profile.full_name.split(" ")[0] : "Usuário"}.
           </Text>
         </View>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/user")}
+        >
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.push("/user")}
@@ -123,7 +127,14 @@ export default function TabLayout() {
                 color={color}
               />
             ),
+
             tabBarActiveBackgroundColor: "#2979b0",
+          }}
+        />
+        <Tabs.Screen
+          name="user"
+          options={{
+            href: null,
           }}
         />
       </Tabs>

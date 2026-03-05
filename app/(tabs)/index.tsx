@@ -75,7 +75,10 @@ export default function HomeScreen() {
             <Text style={styles.actionText}>Poupança</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionItem}>
+          <TouchableOpacity
+            style={styles.actionItem}
+            onPress={() => router.push("/gastos_fixos")}
+          >
             <View style={styles.iconBox}>
               <MaterialCommunityIcons
                 name="file-document-outline"

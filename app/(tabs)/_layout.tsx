@@ -43,9 +43,11 @@ export default function TabLayout() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={ () => {
-            router.push("/(tabs)");
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/(tabs)");
+            }}
+          >
             <Image
               source={require("../../assets/images/logo.png")}
               style={styles.logo}
@@ -135,6 +137,12 @@ export default function TabLayout() {
         />
         <Tabs.Screen
           name="poupanca"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="gastos_fixos"
           options={{
             href: null,
           }}

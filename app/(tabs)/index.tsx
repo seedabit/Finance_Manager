@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import { router } from "expo-router";
+import React, { useEffect } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -32,14 +32,13 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* CARD DE PENDÊNCIAS */}
         <View style={styles.mainCard}>
           <View style={styles.cardHeader}>
             <View>
               <Text style={styles.cardTitle}>Pendências</Text>
               <Text style={styles.mainBalance}>1.446,75</Text>
             </View>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/detalhes")}>
               <Ionicons name="chevron-forward" size={40} color="white" />
             </TouchableOpacity>
           </View>
@@ -62,7 +61,10 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.actionItem}>
+          <TouchableOpacity
+            style={styles.actionItem}
+            onPress={() => router.push("/poupanca")}
+          >
             <View style={styles.iconBox}>
               <MaterialCommunityIcons
                 name="piggy-bank-outline"
@@ -97,11 +99,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 20,
-
     paddingBottom: 120,
   },
   mainCard: {
-    backgroundColor: "#2979b0", // Azul Primário
+    backgroundColor: "#2979b0",
     borderRadius: 35,
     padding: 30,
     minHeight: 420,
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   iconBox: {
-    backgroundColor: "#548ca8", // Azul Secundário
+    backgroundColor: "#548ca8",
     width: 75,
     height: 75,
     borderRadius: 20,

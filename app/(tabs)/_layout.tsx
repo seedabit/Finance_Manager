@@ -60,10 +60,6 @@ export default function TabLayout() {
           activeOpacity={0.7}
           onPress={() => router.push("/user")}
         >
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => router.push("/user")}
-        >
           {profile.avatar_url ? (
             <Image
               source={{

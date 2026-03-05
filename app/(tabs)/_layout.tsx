@@ -43,9 +43,11 @@ export default function TabLayout() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={ () => {
-            router.push("/(tabs)/home");
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/home");
+            }}
+          >
             <Image
               source={require("../../assets/images/logo.png")}
               style={styles.logo}
@@ -65,7 +67,13 @@ export default function TabLayout() {
               source={{
                 uri: `https://fbyjoqkxfckiaegypykn.supabase.co/storage/v1/object/public/avatars/${profile.avatar_url}?t=${Date.now()}`,
               }}
-              style={{ width: 45, height: 45, borderRadius: 22.5, borderColor: "#1a5b8c", borderWidth: 2 }}
+              style={{
+                width: 45,
+                height: 45,
+                borderRadius: 22.5,
+                borderColor: "#1a5b8c",
+                borderWidth: 2,
+              }}
             />
           ) : (
             <MaterialCommunityIcons
@@ -89,7 +97,7 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="index"
+          name="home/index"
           options={{
             title: "Início",
             tabBarIcon: ({ color }) => (
@@ -99,7 +107,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="cartoes"
+          name="cartoes/index"
           options={{
             title: "Cartões",
             tabBarIcon: ({ color }) => (
@@ -113,7 +121,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="detalhes"
+          name="detalhes/index"
           options={{
             title: "Detalhes",
             tabBarIcon: ({ color }) => (
@@ -128,19 +136,19 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="user"
+          name="user/index"
           options={{
             href: null,
           }}
         />
         <Tabs.Screen
-          name="poupanca"
+          name="poupanca/index"
           options={{
             href: null,
           }}
         />
         <Tabs.Screen
-          name="gastos_fixos"
+          name="gastos_fixos/index"
           options={{
             href: null,
           }}

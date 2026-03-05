@@ -1,26 +1,37 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import { Tabs } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { router, Tabs } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function TabLayout() {
-  const [userName, setUserName] = React.useState("");
-  
-    useEffect(() => {
-      const getUserName = async () => {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          setUserName(user.user_metadata.display_name);
+  const [profile, setProfile] = useState({ full_name: "", avatar_url: "" });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("full_name, avatar_url")
+          .eq("id", user.id)
+          .single();
+
+        if (data) {
+          setProfile({
+            full_name: data.full_name,
+            avatar_url: data.avatar_url,
+          });
         }
-      };
-  
-      getUserName();
-    }, []);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -30,14 +41,23 @@ export default function TabLayout() {
             source={require("../../assets/images/logo.png")}
             style={styles.logo}
           />
-          <Text style={styles.userName}>Olá, {userName}.</Text>
+          <Text style={styles.userName}>Olá, {profile.full_name.split(" ")[0]}.</Text>
         </View>
-        <TouchableOpacity activeOpacity={0.7}>
-          <MaterialCommunityIcons
-            name="account-circle-outline"
-            size={45}
-            color="#000"
-          />
+        <TouchableOpacity activeOpacity={0.7} onPress={ () => router.push("/user")}>
+          {profile.avatar_url ? (
+            <Image
+              source={{
+                uri: `https://fbyjoqkxfckiaegypykn.supabase.co/storage/v1/object/public/avatars/${profile.avatar_url}`,
+              }}
+              style={{ width: 45, height: 45, borderRadius: 22.5 }}
+            />
+          ) : (
+            <MaterialCommunityIcons
+              name="account-circle-outline"
+              size={45}
+              color="#000"
+            />
+          )}
         </TouchableOpacity>
       </View>
 

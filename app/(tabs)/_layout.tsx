@@ -133,6 +133,18 @@ export default function TabLayout() {
             href: null,
           }}
         />
+        <Tabs.Screen
+          name="poupanca"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="gastos_fixos"
+          options={{
+            href: null,
+          }}
+        />
       </Tabs>
     </SafeAreaView>
   );

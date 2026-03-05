@@ -1,9 +1,9 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, Tabs } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
-import React, { useState, useEffect } from "react";
 
 export default function TabLayout() {
   const [profile, setProfile] = useState({ full_name: "", avatar_url: "" });
@@ -41,9 +41,14 @@ export default function TabLayout() {
             source={require("../../assets/images/logo.png")}
             style={styles.logo}
           />
-          <Text style={styles.userName}>Olá, {profile.full_name.split(" ")[0]}.</Text>
+          <Text style={styles.userName}>
+            Olá, {profile.full_name.split(" ")[0]}.
+          </Text>
         </View>
-        <TouchableOpacity activeOpacity={0.7} onPress={ () => router.push("/user")}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/user")}
+        >
           {profile.avatar_url ? (
             <Image
               source={{
@@ -107,7 +112,14 @@ export default function TabLayout() {
                 color={color}
               />
             ),
+
             tabBarActiveBackgroundColor: "#2979b0",
+          }}
+        />
+        <Tabs.Screen
+          name="user"
+          options={{
+            href: null,
           }}
         />
       </Tabs>

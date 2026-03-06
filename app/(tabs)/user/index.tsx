@@ -11,15 +11,27 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../../lib/supabase";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { FullWindowOverlay } from "react-native-screens";
 
 export default function UserScreen() {
   const insets = useSafeAreaInsets();
-  const [profile, setProfile] = useState({ full_name: "", avatar_url: "" });
+  const [profile, setProfile] = useState({
+    full_name: "",
+    avatar_url: "",
+    income: "",
+  });
   const router = useRouter();
+  const [newName, setNewName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showInput, setShowInput] = useState(false);
+  const [showIncomeInput, setShowIncomeInput] = useState(false);
+  const [newIncome, setNewIncome] = useState("");
 
   const fetchProfile = async () => {
     const {
@@ -29,7 +41,7 @@ export default function UserScreen() {
     if (user) {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, avatar_url")
+        .select("full_name, avatar_url, income")
         .eq("id", user.id)
         .single();
 
@@ -37,6 +49,7 @@ export default function UserScreen() {
         setProfile({
           full_name: data.full_name,
           avatar_url: data.avatar_url,
+          income: data.income,
         });
       }
     }
@@ -93,27 +106,76 @@ export default function UserScreen() {
   };
 
   const handleLogout = () => {
-  const logoutAction = async () => {
-    await supabase.auth.signOut();
-    router.replace("/login");
+    const logoutAction = async () => {
+      await supabase.auth.signOut();
+      router.replace("/login");
+    };
+
+    if (Platform.OS === "web") {
+      // Na Web usamos o confirm padrão do navegador
+      const confirmou = window.confirm("Tem certeza que deseja sair da conta?");
+      if (confirmou) logoutAction();
+    } else {
+      // No Mobile continuamos usando o Alert bonito do sistema
+      Alert.alert("Sair", "Tem certeza que deseja sair da conta?", [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Sair", style: "destructive", onPress: logoutAction },
+      ]);
+    }
   };
 
-  if (Platform.OS === 'web') {
-    // Na Web usamos o confirm padrão do navegador
-    const confirmou = window.confirm("Tem certeza que deseja sair da conta?");
-    if (confirmou) logoutAction();
-  } else {
-    // No Mobile continuamos usando o Alert bonito do sistema
-    Alert.alert(
-      "Sair",
-      "Tem certeza que deseja sair da conta?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Sair", style: "destructive", onPress: logoutAction }
-      ]
-    );
-  }
-};
+  const changeName = async () => {
+    if (!newName) return Alert.alert("Erro", "O nome não pode ser vazio.");
+
+    const user = (await supabase.auth.getUser()).data.user;
+
+    if (!user) return;
+
+    setLoading(true);
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
+      full_name: newName,
+      avatar_url: profile.avatar_url,
+      income: profile.income,
+    });
+    setLoading(false);
+
+    if (error) {
+      Alert.alert("Erro ao atualizar o nome", error.message);
+    } else {
+      Alert.alert("Sucesso", "Nome atualizado com sucesso!");
+      fetchProfile();
+    }
+  };
+
+  const changeIncome = async () => {
+    if (!newIncome) return Alert.alert("Erro", "A renda não pode ser vazia.");
+
+    const incomeValue = parseFloat(newIncome.replace(",", "."));
+
+    if (isNaN(parseFloat(newIncome)))
+      return Alert.alert("Erro", "Renda deve ser um número válido.");
+
+    const user = (await supabase.auth.getUser()).data.user;
+
+    if (!user) return;
+
+    setLoading(true);
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
+      full_name: profile.full_name,
+      avatar_url: profile.avatar_url,
+      income: parseFloat(newIncome),
+    });
+    setLoading(false);
+
+    if (error) {
+      Alert.alert("Erro ao atualizar renda", error.message);
+    } else {
+      Alert.alert("Sucesso", "Renda atualizada com sucesso!");
+      fetchProfile();
+    }
+  };
 
   return (
     <ScrollView
@@ -146,9 +208,100 @@ export default function UserScreen() {
             />
           )}
         </TouchableOpacity>
-
         <Text style={styles.h4}>{profile.full_name}</Text>
       </View>
+
+      <View style={styles.rowItem}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+          <Text style={styles.h4}>Renda Mensal</Text>
+          <TouchableOpacity onPress={() => setShowIncomeInput(!showIncomeInput)}>
+            <Ionicons
+              name={showIncomeInput ? "chevron-up" : "chevron-down"}
+              size={20}
+              color="#000"
+            />
+          </TouchableOpacity>
+        </View>
+
+        <Text>
+          R${" "}
+          {profile.income
+            ? Number(profile.income).toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            : "0,00"}
+        </Text>
+      </View>
+
+      {showIncomeInput && (
+        <View style={styles.inputContainer}>
+          <Text style={styles.text}>
+            Para alterar sua renda, digite o novo valor no campo abaixo e clique
+            em "Alterar Renda".
+          </Text>
+          <TextInput
+            style={styles.input}
+            value={newIncome}
+            onChangeText={setNewIncome}
+            keyboardType="decimal-pad"
+            placeholder="0.00"
+          />
+          <TouchableOpacity
+            style={styles.hiddenButton}
+            onPress={changeIncome}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>Alterar Renda</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View
+        style={{
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 10,
+          marginBottom: 10,
+          gap: 5,
+        }}
+      >
+        <Text style={styles.h4}>Alterar nome</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setShowInput(!showInput);
+          }}
+        >
+          <Ionicons
+            name={showInput ? "chevron-up" : "chevron-down"}
+            size={20}
+            color="#000"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {showInput && (
+        <View style={styles.inputContainer}>
+          <Text style={styles.text}>
+            Para alterar seu nome, digite o novo nome no campo abaixo e clique
+            em "Alterar Nome".
+          </Text>
+          <TextInput
+            style={styles.input}
+            value={newName}
+            onChangeText={setNewName}
+          />
+          <TouchableOpacity
+            style={[styles.hiddenButton, { marginHorizontal: 30 }]}
+            onPress={changeName}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>Alterar Nome</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <Text style={styles.buttonText}>Sair</Text>
       </TouchableOpacity>
@@ -167,9 +320,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   text: {
-    fontSize: 16,
-    textAlign: "center",
-    padding: 20,
+    fontSize: 12,
+    textAlign: "justify",
+    paddingHorizontal: 10,
   },
   title: {
     flexDirection: "row",
@@ -201,9 +354,46 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
   },
+  hiddenButton: {
+    height: 40,
+    backgroundColor: "#2374AB",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+  },
+  arrowButton: {
+    width: 25,
+    height: 25,
+    backgroundColor: "#2374AB",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+  },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  input: {
+    width: "100%",
+    height: 48,
+    backgroundColor: "#D9D9D9",
+    borderRadius: 32,
+    paddingHorizontal: 20,
+    opacity: 0.5,
+  },
+  rowItem: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  inputContainer: {
+    width: "100%",
+    gap: 15,
+    marginBottom: 20,
+    paddingHorizontal: 10,
   },
 });

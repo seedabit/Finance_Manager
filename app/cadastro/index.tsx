@@ -25,8 +25,57 @@ export default function App() {
   const [name, setName] = useState("");
 
   const handleSignUp = async () => {
+    var hasUpperCase = /[A-Z]/.test(password);
+    var hasLowerCase = /[a-z]/.test(password);
+    var hasSpecialChar = /\W|_/.test(password);
+
     if (!email || !password || !name) {
       Alert.alert("Erro", "Por favor, preencha todos os campos.");
+      return;
+    }
+
+    if (password.length < 6) {
+      if (Platform.OS === "web") {
+        alert("A senha deve conter pelo menos 6 caracterres.");
+      } else {
+        Alert.alert("Erro", "A senha deve conter pelo menos 6 caracteres.");
+      }
+      return;
+    }
+
+    if (!hasLowerCase) {
+      if (Platform.OS === "web") {
+        alert("A senha deve conter pelo menos uma letra minúscula.");
+      } else {
+        Alert.alert(
+          "Erro",
+          "A senha deve conter pelo menos uma letra minúscula.",
+        );
+      }
+      return;
+    }
+
+    if (!hasUpperCase) {
+      if (Platform.OS === "web") {
+        alert("A senha deve conter pelo menos uma letra maiúscula.");
+      } else {
+        Alert.alert(
+          "Erro",
+          "A senha deve conter pelo menos uma letra maiúscula.",
+        );
+      }
+      return;
+    }
+
+    if (!hasSpecialChar) {
+      if (Platform.OS === "web") {
+        alert("A senha deve conter pelo menos um caractere especial.");
+      } else {
+        Alert.alert(
+          "Erro",
+          "A senha deve conter pelo menos um caractere especial.",
+        );
+      }
       return;
     }
 
@@ -36,19 +85,29 @@ export default function App() {
       password: password,
       options: {
         data: {
-            display_name: name,
-        }
-      }
+          display_name: name,
+        },
+      },
     });
     setLoading(false);
 
     if (error) {
-      Alert.alert("Erro no Cadastro", error.message);
+      if (Platform.OS === "web") {
+        alert("Erro no Cadastro: " + error.message);
+      } else {
+        Alert.alert("Erro no Cadastro", error.message);
+      }
     } else {
-      Alert.alert(
-        "Sucesso",
-        "Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.",
-      );
+      if (Platform.OS === "web") {
+        alert(
+          "Sucesso! Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.",
+        );
+      } else {
+        Alert.alert(
+          "Sucesso",
+          "Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.",
+        );
+      }
     }
 
     setLoading(false);

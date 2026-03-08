@@ -17,14 +17,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../../lib/supabase";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { FullWindowOverlay } from "react-native-screens";
 
 export default function UserScreen() {
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState({
     full_name: "",
     avatar_url: "",
-    income: "",
+    monthly_income: "",
   });
   const router = useRouter();
   const [newName, setNewName] = useState("");
@@ -41,7 +40,7 @@ export default function UserScreen() {
     if (user) {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, avatar_url, income")
+        .select("full_name, avatar_url, monthly_income")
         .eq("id", user.id)
         .single();
 
@@ -49,7 +48,7 @@ export default function UserScreen() {
         setProfile({
           full_name: data.full_name,
           avatar_url: data.avatar_url,
-          income: data.income,
+          monthly_income: data.monthly_income,
         });
       }
     }
@@ -98,9 +97,17 @@ export default function UserScreen() {
     });
 
     if (updateError) {
-      Alert.alert("Erro ao atualizar o perfil", updateError.message);
+      if (Platform.OS === "web") {
+        alert("Erro ao atualizar o perfil: " + updateError.message);
+      } else {
+        Alert.alert("Erro ao atualizar o perfil", updateError.message);
+      }
     } else {
-      Alert.alert("Sucesso", "Foto de perfil atualizada com sucesso!");
+      if (Platform.OS === "web") {
+        alert("Sucesso! Foto de perfil atualizada com sucesso!");
+      } else {
+        Alert.alert("Sucesso", "Foto de perfil atualizada com sucesso!");
+      }
       fetchProfile();
     }
   };
@@ -112,11 +119,9 @@ export default function UserScreen() {
     };
 
     if (Platform.OS === "web") {
-      // Na Web usamos o confirm padrão do navegador
       const confirmou = window.confirm("Tem certeza que deseja sair da conta?");
       if (confirmou) logoutAction();
     } else {
-      // No Mobile continuamos usando o Alert bonito do sistema
       Alert.alert("Sair", "Tem certeza que deseja sair da conta?", [
         { text: "Cancelar", style: "cancel" },
         { text: "Sair", style: "destructive", onPress: logoutAction },
@@ -136,25 +141,44 @@ export default function UserScreen() {
       id: user.id,
       full_name: newName,
       avatar_url: profile.avatar_url,
-      income: profile.income,
+      monthly_income: profile.monthly_income,
     });
     setLoading(false);
 
     if (error) {
-      Alert.alert("Erro ao atualizar o nome", error.message);
+      if (Platform.OS === "web") {
+        alert("Erro ao atualizar o nome: " + error.message);
+      } else {
+        Alert.alert("Erro ao atualizar o nome", error.message);
+      }
     } else {
-      Alert.alert("Sucesso", "Nome atualizado com sucesso!");
+      if (Platform.OS === "web") {
+        alert("Sucesso! Nome atualizado com sucesso!");
+      } else {
+        Alert.alert("Sucesso", "Nome atualizado com sucesso!");
+      }
       fetchProfile();
     }
   };
 
   const changeIncome = async () => {
-    if (!newIncome) return Alert.alert("Erro", "A renda não pode ser vazia.");
+    if (!newIncome) {
+      if (Platform.OS === "web") {
+        alert("Erro: A renda não pode ser vazia.");
+      } else {
+        Alert.alert("Erro", "A renda não pode ser vazia.");
+      }
+      return;
+    }
 
-    const incomeValue = parseFloat(newIncome.replace(",", "."));
-
-    if (isNaN(parseFloat(newIncome)))
-      return Alert.alert("Erro", "Renda deve ser um número válido.");
+    if (isNaN(parseFloat(newIncome))) {
+      if (Platform.OS === "web") {
+        alert("Erro: A renda deve ser um número válido.");
+      } else {
+        Alert.alert("Erro", "A renda deve ser um número válido.");
+      }
+      return;
+    }
 
     const user = (await supabase.auth.getUser()).data.user;
 
@@ -165,14 +189,22 @@ export default function UserScreen() {
       id: user.id,
       full_name: profile.full_name,
       avatar_url: profile.avatar_url,
-      income: parseFloat(newIncome),
+      monthly_income: parseFloat(newIncome),
     });
     setLoading(false);
 
     if (error) {
-      Alert.alert("Erro ao atualizar renda", error.message);
+      if (Platform.OS === "web") {
+        alert("Erro ao atualizar a renda: " + error.message);
+      } else {
+        Alert.alert("Erro ao atualizar renda", error.message);
+      }
     } else {
-      Alert.alert("Sucesso", "Renda atualizada com sucesso!");
+      if (Platform.OS === "web") {
+        alert("Sucesso! Renda atualizada com sucesso!");
+      } else {
+        Alert.alert("Sucesso", "Renda atualizada com sucesso!");
+      }
       fetchProfile();
     }
   };
@@ -214,7 +246,9 @@ export default function UserScreen() {
       <View style={styles.rowItem}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
           <Text style={styles.h4}>Renda Mensal</Text>
-          <TouchableOpacity onPress={() => setShowIncomeInput(!showIncomeInput)}>
+          <TouchableOpacity
+            onPress={() => setShowIncomeInput(!showIncomeInput)}
+          >
             <Ionicons
               name={showIncomeInput ? "chevron-up" : "chevron-down"}
               size={20}
@@ -225,8 +259,8 @@ export default function UserScreen() {
 
         <Text>
           R${" "}
-          {profile.income
-            ? Number(profile.income).toLocaleString("pt-BR", {
+          {profile.monthly_income
+            ? Number(profile.monthly_income).toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })

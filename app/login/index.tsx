@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Image
+  Image,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -36,7 +36,11 @@ export default function App() {
     setLoading(false);
 
     if (error) {
-      Alert.alert("Erro no Login", error.message);
+      if (Platform.OS === "web") {
+        alert("Erro no Login: " + error.message);
+      } else {
+        Alert.alert("Erro no Login", error.message);
+      }
     }
 
     setLoading(false);
@@ -64,7 +68,10 @@ export default function App() {
       ]}
     >
       <View style={styles.header}>
-        <Image source={require("../../assets/images/logo2.png")} style={styles.logo} />
+        <Image
+          source={require("../../assets/images/logo2.png")}
+          style={styles.logo}
+        />
       </View>
 
       <View style={styles.subtitle}>
@@ -113,7 +120,10 @@ export default function App() {
 
       <View style={{ width: "100%", alignItems: "center", gap: 8 }}>
         <Text style={styles.h4}>Não tem uma conta?</Text>
-        <TouchableOpacity style={styles.button} onPress={() => router.push("/cadastro")}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/cadastro")}
+        >
           <Text style={styles.buttonText}>Cadastre-se</Text>
         </TouchableOpacity>
       </View>
@@ -169,7 +179,7 @@ const styles = StyleSheet.create({
   formWrapper: {
     width: "100%",
     marginTop: 20,
-    marginBottom: 40
+    marginBottom: 40,
   },
   form: {
     width: "100%",

@@ -68,7 +68,8 @@ export default function DetalhesScreen() {
             chartConfig={chartConfig}
             accessor={"population"}
             backgroundColor={"transparent"}
-            paddingLeft={"15"}
+            paddingLeft={"0"}
+            center={[10, 0]}
             absolute
           />
         </View>

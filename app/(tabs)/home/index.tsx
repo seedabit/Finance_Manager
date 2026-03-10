@@ -102,7 +102,7 @@ export default function HomeScreen() {
             <Text style={styles.actionText}>Novo Gasto</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.actionItem}
             onPress={() => router.push("/(tabs)/poupanca")}
           >
@@ -128,7 +128,7 @@ export default function HomeScreen() {
               />
             </View>
             <Text style={styles.actionText}>Gastos Fixos</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </ScrollView>
 

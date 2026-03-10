@@ -1,29 +1,28 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  Platform,
-  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../../lib/supabase";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function UserScreen() {
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState({
     full_name: "",
     avatar_url: "",
-    monthly_income: "",
+    monthly_income: 0,
   });
   const router = useRouter();
   const [newName, setNewName] = useState("");
@@ -38,7 +37,7 @@ export default function UserScreen() {
     } = await supabase.auth.getUser();
 
     if (user) {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("profiles")
         .select("full_name, avatar_url, monthly_income")
         .eq("id", user.id)
@@ -46,9 +45,9 @@ export default function UserScreen() {
 
       if (data) {
         setProfile({
-          full_name: data.full_name,
-          avatar_url: data.avatar_url,
-          monthly_income: data.monthly_income,
+          full_name: data.full_name || "",
+          avatar_url: data.avatar_url || "",
+          monthly_income: data.monthly_income || 0,
         });
       }
     }
@@ -70,9 +69,9 @@ export default function UserScreen() {
     if (result.canceled) return;
 
     const user = (await supabase.auth.getUser()).data.user;
-
     if (!user) return;
 
+    setLoading(true);
     const fileExtension = result.assets[0].uri.split(".").pop();
     const fileName = `${user.id}.${fileExtension}`;
     const filePath = `${fileName}`;
@@ -85,29 +84,23 @@ export default function UserScreen() {
       });
 
     if (uploadError) {
+      setLoading(false);
       Alert.alert("Erro ao fazer o upload", uploadError.message);
       return;
     }
 
-    const { error: updateError } = await supabase.from("profiles").upsert({
-      id: user.id,
-      full_name:
-        profile.full_name || user.user_metadata.display_name || "Usuário",
-      avatar_url: filePath,
-    });
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        avatar_url: filePath,
+      })
+      .eq("id", user.id);
 
+    setLoading(false);
     if (updateError) {
-      if (Platform.OS === "web") {
-        alert("Erro ao atualizar o perfil: " + updateError.message);
-      } else {
-        Alert.alert("Erro ao atualizar o perfil", updateError.message);
-      }
+      Alert.alert("Erro ao atualizar o perfil", updateError.message);
     } else {
-      if (Platform.OS === "web") {
-        alert("Sucesso! Foto de perfil atualizada com sucesso!");
-      } else {
-        Alert.alert("Sucesso", "Foto de perfil atualizada com sucesso!");
-      }
+      Alert.alert("Sucesso", "Foto de perfil atualizada com sucesso!");
       fetchProfile();
     }
   };
@@ -119,8 +112,8 @@ export default function UserScreen() {
     };
 
     if (Platform.OS === "web") {
-      const confirmou = window.confirm("Tem certeza que deseja sair da conta?");
-      if (confirmou) logoutAction();
+      if (window.confirm("Tem certeza que deseja sair da conta?"))
+        logoutAction();
     } else {
       Alert.alert("Sair", "Tem certeza que deseja sair da conta?", [
         { text: "Cancelar", style: "cancel" },
@@ -133,121 +126,88 @@ export default function UserScreen() {
     if (!newName) return Alert.alert("Erro", "O nome não pode ser vazio.");
 
     const user = (await supabase.auth.getUser()).data.user;
-
     if (!user) return;
 
     setLoading(true);
-    const { error } = await supabase.from("profiles").upsert({
-      id: user.id,
-      full_name: newName,
-      avatar_url: profile.avatar_url,
-      monthly_income: profile.monthly_income,
-    });
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: newName,
+      })
+      .eq("id", user.id);
+
     setLoading(false);
 
     if (error) {
-      if (Platform.OS === "web") {
-        alert("Erro ao atualizar o nome: " + error.message);
-      } else {
-        Alert.alert("Erro ao atualizar o nome", error.message);
-      }
+      Alert.alert("Erro ao atualizar o nome", error.message);
     } else {
-      if (Platform.OS === "web") {
-        alert("Sucesso! Nome atualizado com sucesso!");
-      } else {
-        Alert.alert("Sucesso", "Nome atualizado com sucesso!");
-      }
+      Alert.alert("Sucesso", "Nome atualizado com sucesso!");
+      setShowInput(false);
       fetchProfile();
     }
   };
 
   const changeIncome = async () => {
-    if (!newIncome) {
-      if (Platform.OS === "web") {
-        alert("Erro: A renda não pode ser vazia.");
-      } else {
-        Alert.alert("Erro", "A renda não pode ser vazia.");
-      }
-      return;
-    }
-
-    if (isNaN(parseFloat(newIncome))) {
-      if (Platform.OS === "web") {
-        alert("Erro: A renda deve ser um número válido.");
-      } else {
-        Alert.alert("Erro", "A renda deve ser um número válido.");
-      }
-      return;
-    }
+    const incomeValue = parseFloat(newIncome.replace(",", "."));
+    if (isNaN(incomeValue))
+      return Alert.alert("Erro", "A renda deve ser um número válido.");
 
     const user = (await supabase.auth.getUser()).data.user;
-
     if (!user) return;
 
     setLoading(true);
-    const { error } = await supabase.from("profiles").upsert({
-      id: user.id,
-      full_name: profile.full_name,
-      avatar_url: profile.avatar_url,
-      monthly_income: parseFloat(newIncome),
-    });
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        monthly_income: incomeValue,
+      })
+      .eq("id", user.id);
+
     setLoading(false);
 
     if (error) {
-      if (Platform.OS === "web") {
-        alert("Erro ao atualizar a renda: " + error.message);
-      } else {
-        Alert.alert("Erro ao atualizar renda", error.message);
-      }
+      Alert.alert("Erro ao atualizar renda", error.message);
     } else {
-      if (Platform.OS === "web") {
-        alert("Sucesso! Renda atualizada com sucesso!");
-      } else {
-        Alert.alert("Sucesso", "Renda atualizada com sucesso!");
-      }
+      Alert.alert("Sucesso", "Renda atualizada com sucesso!");
+      setShowIncomeInput(false);
       fetchProfile();
     }
   };
 
   return (
     <ScrollView
-      style={ styles.container }
+      style={styles.container}
       contentContainerStyle={[
         styles.scrollContent,
-        { 
+        {
           paddingTop: insets.top + 20,
-          paddingBottom: insets.bottom + 40
+          paddingBottom: insets.bottom + 40,
         },
       ]}
     >
-      <View style={{ alignItems: "center", marginBottom: 20 }}>
-        <TouchableOpacity onPress={changeProfilePic}>
+      <View style={{ alignItems: "center", marginBottom: 30 }}>
+        <TouchableOpacity onPress={changeProfilePic} disabled={loading}>
           {profile.avatar_url ? (
             <Image
               source={{
-                uri: `https://fbyjoqkxfckiaegypykn.supabase.co/storage/v1/object/public/avatars/${profile.avatar_url}?${Date.now()}`,
+                uri: `https://fbyjoqkxfckiaegypykn.supabase.co/storage/v1/object/public/avatars/${profile.avatar_url}?t=${Date.now()}`,
               }}
-              style={{
-                width: 120,
-                height: 120,
-                borderRadius: 60,
-                borderColor: "#1a5b8c",
-                borderWidth: 4,
-              }}
+              style={styles.avatar}
             />
           ) : (
             <MaterialCommunityIcons
               name="account-circle-outline"
               size={120}
-              color="#000"
+              color="#548ca8"
             />
           )}
         </TouchableOpacity>
-        <Text style={styles.h4}>{profile.full_name}</Text>
+        <Text style={styles.h4}>{profile.full_name || "Usuário"}</Text>
       </View>
 
       <View style={styles.rowItem}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <MaterialCommunityIcons name="cash" size={20} color="#2979b0" />
           <Text style={styles.h4}>Renda Mensal</Text>
           <TouchableOpacity
             onPress={() => setShowIncomeInput(!showIncomeInput)}
@@ -255,92 +215,76 @@ export default function UserScreen() {
             <Ionicons
               name={showIncomeInput ? "chevron-up" : "chevron-down"}
               size={20}
-              color="#000"
+              color="#2979b0"
             />
           </TouchableOpacity>
         </View>
-
-        <Text>
+        <Text style={styles.valueText}>
           R${" "}
-          {profile.monthly_income
-            ? Number(profile.monthly_income).toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
-            : "0,00"}
+          {Number(profile.monthly_income).toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </Text>
       </View>
 
       {showIncomeInput && (
         <View style={styles.inputContainer}>
-          <Text style={styles.text}>
-            Para alterar sua renda, digite o novo valor no campo abaixo e clique
-            em "Alterar Renda".
-          </Text>
           <TextInput
             style={styles.input}
             value={newIncome}
             onChangeText={setNewIncome}
             keyboardType="decimal-pad"
-            placeholder="0.00"
+            placeholder="Novo valor (ex: 3500.00)"
           />
           <TouchableOpacity
             style={styles.hiddenButton}
             onPress={changeIncome}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>Alterar Renda</Text>
+            <Text style={styles.buttonText}>Salvar Renda</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      <View
-        style={{
-          width: "100%",
-          flexDirection: "row",
-          alignItems: "center",
-          paddingVertical: 10,
-          marginBottom: 10,
-          gap: 5,
-        }}
-      >
-        <Text style={styles.h4}>Alterar nome</Text>
-        <TouchableOpacity
-          onPress={() => {
-            setShowInput(!showInput);
-          }}
-        >
-          <Ionicons
-            name={showInput ? "chevron-up" : "chevron-down"}
+      <View style={styles.rowItem}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <MaterialCommunityIcons
+            name="pencil-outline"
             size={20}
-            color="#000"
+            color="#2979b0"
           />
-        </TouchableOpacity>
+          <Text style={styles.h4}>Alterar nome</Text>
+          <TouchableOpacity onPress={() => setShowInput(!showInput)}>
+            <Ionicons
+              name={showInput ? "chevron-up" : "chevron-down"}
+              size={20}
+              color="#2979b0"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {showInput && (
         <View style={styles.inputContainer}>
-          <Text style={styles.text}>
-            Para alterar seu nome, digite o novo nome no campo abaixo e clique
-            em "Alterar Nome".
-          </Text>
           <TextInput
             style={styles.input}
             value={newName}
             onChangeText={setNewName}
+            placeholder="Digite o novo nome"
           />
           <TouchableOpacity
-            style={[styles.hiddenButton, { marginHorizontal: 30 }]}
+            style={styles.hiddenButton}
             onPress={changeName}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>Alterar Nome</Text>
+            <Text style={styles.buttonText}>Salvar Nome</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Sair</Text>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.buttonText}>Sair da Conta</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -352,84 +296,68 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   scrollContent: {
-    alignItems: "center",
     paddingHorizontal: 30,
-  },
-  text: {
-    fontSize: 12,
-    textAlign: "justify",
-    paddingHorizontal: 10,
-  },
-  title: {
-    flexDirection: "row",
-  },
-  subtitle: {
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  h1: {
-    fontSize: 64,
-    fontWeight: "bold",
-    lineHeight: 80,
-  },
-  h2: {
-    fontSize: 32,
-    fontWeight: "bold",
-    lineHeight: 40,
   },
   h4: {
     fontSize: 16,
     fontWeight: "bold",
-    lineHeight: 24,
+    color: "#333",
   },
-  button: {
-    width: "100%",
-    height: 40,
-    backgroundColor: "#2374AB",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-  },
-  hiddenButton: {
-    height: 40,
-    backgroundColor: "#2374AB",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-  },
-  arrowButton: {
-    width: 25,
-    height: 25,
-    backgroundColor: "#2374AB",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 15,
-  },
-  buttonText: {
-    color: "#FFFFFF",
+  valueText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: "#2979b0",
   },
-  input: {
-    width: "100%",
-    height: 48,
-    backgroundColor: "#D9D9D9",
-    borderRadius: 32,
-    paddingHorizontal: 20,
-    opacity: 0.5,
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderColor: "#2979b0",
+    borderWidth: 4,
   },
   rowItem: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
-    marginBottom: 10,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
   inputContainer: {
     width: "100%",
-    gap: 15,
+    gap: 12,
+    marginTop: 10,
     marginBottom: 20,
-    paddingHorizontal: 10,
+  },
+  input: {
+    width: "100%",
+    height: 48,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  hiddenButton: {
+    height: 45,
+    backgroundColor: "#2979b0",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+  },
+  logoutButton: {
+    width: "100%",
+    height: 50,
+    backgroundColor: "#ff4d4d",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+    marginTop: 40,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

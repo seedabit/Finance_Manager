@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -8,22 +8,44 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AddTransactionModal from "../../../components/AddTransactionModal";
 import { supabase } from "../../../lib/supabase";
 
 export default function HomeScreen() {
-  const [userName, setUserName] = React.useState("");
+  const [totalPendencias, setTotalPendencias] = useState(0);
+  const [listaPendencias, setListaPendencias] = useState<[string, number][]>(
+    [],
+  );
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const fetchData = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("transactions")
+      .select(`amount, categories (name)`)
+      .eq("user_id", user.id)
+      .eq("type", "expense");
+
+    if (data) {
+      const total = data.reduce((acc, item) => acc + Number(item.amount), 0);
+      setTotalPendencias(total);
+
+      const agrupado = data.reduce((acc: any, item: any) => {
+        const catName = item.categories?.name || "Outros";
+        acc[catName] = (acc[catName] || 0) + Number(item.amount);
+        return acc;
+      }, {});
+
+      setListaPendencias(Object.entries(agrupado));
+    }
+  };
 
   useEffect(() => {
-    const getUserName = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        setUserName(user.user_metadata.display_name);
-      }
-    };
-
-    getUserName();
+    fetchData();
   }, []);
 
   return (
@@ -36,26 +58,35 @@ export default function HomeScreen() {
           <View style={styles.cardHeader}>
             <View>
               <Text style={styles.cardTitle}>Pendências</Text>
-              <Text style={styles.mainBalance}>1.446,75</Text>
+              <Text style={styles.mainBalance}>
+                {totalPendencias.toLocaleString("pt-BR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </Text>
             </View>
-            <TouchableOpacity onPress={() => router.push("/detalhes")}>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/detalhes")}>
               <Ionicons name="chevron-forward" size={40} color="white" />
             </TouchableOpacity>
           </View>
 
           <View style={styles.listContainer}>
             <View style={styles.valuesColumn}>
-              <Text style={styles.listValue}>600,00</Text>
-              <Text style={styles.listValue}>742,47</Text>
-              <Text style={styles.listValue}>104,28</Text>
+              {listaPendencias.map(([_, valor], i) => (
+                <Text key={i} style={styles.listValue}>
+                  {valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </Text>
+              ))}
             </View>
 
             <View style={styles.verticalLine} />
 
             <View style={styles.labelsColumn}>
-              <Text style={styles.listLabel}>Aluguel</Text>
-              <Text style={styles.listLabel}>Visa</Text>
-              <Text style={styles.listLabel}>Investimentos</Text>
+              {listaPendencias.map(([nome], i) => (
+                <Text key={i} style={styles.listLabel}>
+                  {nome}
+                </Text>
+              ))}
             </View>
           </View>
         </View>
@@ -63,7 +94,17 @@ export default function HomeScreen() {
         <View style={styles.actionsRow}>
           <TouchableOpacity
             style={styles.actionItem}
-            onPress={() => router.push("../poupanca")}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <View style={[styles.iconBox, { backgroundColor: "#2979b0" }]}>
+              <MaterialCommunityIcons name="plus" size={35} color="white" />
+            </View>
+            <Text style={styles.actionText}>Novo Gasto</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionItem}
+            onPress={() => router.push("/(tabs)/poupanca")}
           >
             <View style={styles.iconBox}>
               <MaterialCommunityIcons
@@ -77,7 +118,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             style={styles.actionItem}
-            onPress={() => router.push("../gastos_fixos")}
+            onPress={() => router.push("/(tabs)/gastos_fixos")}
           >
             <View style={styles.iconBox}>
               <MaterialCommunityIcons
@@ -90,6 +131,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <AddTransactionModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onRefresh={fetchData}
+      />
     </View>
   );
 }
@@ -108,7 +155,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2979b0",
     borderRadius: 35,
     padding: 30,
-    minHeight: 420,
+    minHeight: 350,
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -145,40 +192,41 @@ const styles = StyleSheet.create({
   },
   verticalLine: {
     width: 2,
-    height: 120,
+    minHeight: 100,
     backgroundColor: "#fff",
   },
   listValue: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-    marginVertical: 10,
+    marginVertical: 8,
   },
   listLabel: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "500",
-    marginVertical: 10,
+    marginVertical: 8,
   },
   actionsRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     marginTop: 40,
   },
   actionItem: {
     alignItems: "center",
+    flex: 1,
   },
   iconBox: {
     backgroundColor: "#548ca8",
-    width: 75,
-    height: 75,
+    width: 65,
+    height: 65,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
   },
   actionText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: "bold",
     color: "#333",
   },

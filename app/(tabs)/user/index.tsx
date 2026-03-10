@@ -211,10 +211,13 @@ export default function UserScreen() {
 
   return (
     <ScrollView
-      style={[styles.container, { paddingTop: insets.top + 20 }]}
+      style={ styles.container }
       contentContainerStyle={[
         styles.scrollContent,
-        { paddingBottom: insets.bottom },
+        { 
+          paddingTop: insets.top + 20,
+          paddingBottom: insets.bottom + 40
+        },
       ]}
     >
       <View style={{ alignItems: "center", marginBottom: 20 }}>
@@ -350,7 +353,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     alignItems: "center",
-    justifyContent: "center",
     paddingHorizontal: 30,
   },
   text: {

@@ -1,46 +1,30 @@
 {
   "expo": {
-    "name": "Finance_Manager",
-    "slug": "Finance_Manager",
+    "name": "UBank",
+    "slug": "UBank",
     "version": "1.0.0",
     "orientation": "portrait",
-    // "icon": "../Finance_Manager/Finance_Manager/assets/images/logo.png",
-    "scheme": "financemanager",
+    "icon": "./assets/images/icon.png",
+    "scheme": "ubank",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        // "foregroundImage": "./assets/images/android-icon-foreground.png",
-        // "backgroundImage": "./assets/images/android-icon-background.png",
-        // "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#FAFAFA",
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundImage": "./assets/images/icon.png",
+        "monochromeImage": "./assets/images/icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.yanntavares.Finance_Manager"
+      "package": "com.yanntavares.UBank"
     },
     "web": {
-      "output": "static",
-      // "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
-    // "plugins": [
-    //   "expo-router",
-    //   [
-    //     "expo-splash-screen",
-    //     {
-    //       "image": "./assets/images/splash-icon.png",
-    //       "imageWidth": 200,
-    //       "resizeMode": "contain",
-    //       "backgroundColor": "#ffffff",
-    //       "dark": {
-    //         "backgroundColor": "#000000"
-    //       }
-    //     }
-    //   ]
-    // ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
@@ -48,7 +32,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9d371ccc-f0e3-4a1e-8c71-59875afa8942"
+        "projectId": "cffbbbd5-08bb-4488-85ad-18d9388aca79"
       }
     }
   }

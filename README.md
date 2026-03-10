@@ -61,4 +61,4 @@ create table if not exists debtors (
 ```
 
 ## Conclusão do Processo
-O processo de estudo e implementação do Supabase resultou numa conexão bem-sucedida entre o front-end em **React Native/Expo** e o backend na nuvem. A aplicação agora possui uma "tubulação" de dados segura, com suporte para faturas de cartões, gestão de devedores e controle de renda mensal, estando pronta para a expansão de funcionalidades de interface.
+O processo de estudo e implementação do Supabase resultou numa conexão bem-sucedida entre o front-end em **React Native/Expo** e o backend na nuvem. A aplicação agora possui uma "tubulação" de dados segura, com suporte para faturas de cartões, gestão de devedores e controle de renda mensal, estando pronta para a expansão de funcionalidades de interface

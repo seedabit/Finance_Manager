@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Modal,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { supabase } from "../lib/supabase";
 
@@ -20,11 +20,16 @@ export default function AddTransactionModal({
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categories, setCategories] = useState<any[]>([]);
+  const [cards, setCards] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (visible) fetchCategories();
+    if (visible) {
+      fetchCategories();
+      fetchCards();
+    }
   }, [visible]);
 
   const fetchCategories = async () => {
@@ -35,11 +40,15 @@ export default function AddTransactionModal({
     if (data) setCategories(data);
   };
 
-  const handleSave = async () => {
-    // 1. Log de entrada
-    console.log("Tentando salvar...", { amount, selectedCategory });
+  const fetchCards = async () => {
+    const { data, error } = await supabase
+      .from("credit_cards")
+      .select("id, name");
+    if (error) console.error("Erro ao carregar cartões:", error.message);
+    if (data) setCards(data);
+  };
 
-    // 2. Verificação de campos (Usando alert nativo para Web)
+  const handleSave = async () => {
     if (!amount || !selectedCategory) {
       const msg = "Preencha o valor e selecione uma categoria!";
       Platform.OS === "web" ? window.alert(msg) : console.log(msg);
@@ -48,7 +57,6 @@ export default function AddTransactionModal({
 
     setLoading(true);
     try {
-      // 3. Verificação de sessão
       const {
         data: { user },
         error: authError,
@@ -59,13 +67,11 @@ export default function AddTransactionModal({
         return;
       }
 
-      console.log("Usuário autenticado:", user.id);
-
-      // 4. Inserção no banco
       const { error: dbError } = await supabase.from("transactions").insert([
         {
           user_id: user.id,
           category_id: selectedCategory,
+          credit_card_id: selectedCard,
           amount: parseFloat(amount.replace(",", ".")),
           description: description || "Gasto registrado",
           type: "expense",
@@ -74,13 +80,12 @@ export default function AddTransactionModal({
       ]);
 
       if (dbError) {
-        console.error("Erro no Supabase:", dbError);
         window.alert("Erro no banco: " + dbError.message);
       } else {
-        console.log("Sucesso ao salvar!");
         setAmount("");
         setDescription("");
         setSelectedCategory(null);
+        setSelectedCard(null);
         onRefresh();
         onClose();
       }
@@ -113,25 +118,53 @@ export default function AddTransactionModal({
           />
 
           <Text style={styles.label}>Categoria:</Text>
-          <View style={{ height: 60, marginBottom: 20 }}>
+          <View style={{ height: 50, marginBottom: 15 }}>
             <FlatList
               data={categories}
               horizontal
+              showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[
-                    styles.categoryChip,
-                    selectedCategory === item.id && styles.selectedChip,
+                    styles.chip,
+                    selectedCategory === item.id && styles.selectedCategoryChip,
                   ]}
-                  onPress={() => {
-                    console.log("Categoria selecionada:", item.id);
-                    setSelectedCategory(item.id);
-                  }}
+                  onPress={() => setSelectedCategory(item.id)}
                 >
                   <Text
                     style={
                       selectedCategory === item.id
+                        ? styles.selectedText
+                        : styles.categoryText
+                    }
+                  >
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+          <Text style={styles.label}>Cartão:</Text>
+          <View style={{ height: 50, marginBottom: 20 }}>
+            <FlatList
+              data={cards}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.chip,
+                    selectedCard === item.id && styles.selectedCardChip,
+                  ]}
+                  onPress={() =>
+                    setSelectedCard(selectedCard === item.id ? null : item.id)
+                  }
+                >
+                  <Text
+                    style={
+                      selectedCard === item.id
                         ? styles.selectedText
                         : styles.categoryText
                     }
@@ -150,10 +183,7 @@ export default function AddTransactionModal({
 
             <TouchableOpacity
               style={[styles.saveButton, loading && { opacity: 0.5 }]}
-              onPress={() => {
-                console.log("Botão Salvar pressionado fisicamente");
-                handleSave();
-              }}
+              onPress={handleSave}
               disabled={loading}
             >
               {loading ? (
@@ -180,7 +210,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 30,
-    minHeight: 450,
+    minHeight: 520,
   },
   title: { fontSize: 22, fontWeight: "bold", color: "#333", marginBottom: 20 },
   input: {
@@ -193,7 +223,7 @@ const styles = StyleSheet.create({
     borderColor: "#eee",
   },
   label: { fontSize: 16, fontWeight: "bold", color: "#666", marginBottom: 10 },
-  categoryChip: {
+  chip: {
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
@@ -202,15 +232,11 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: "center",
   },
-  selectedChip: { backgroundColor: "#2979b0" },
+  selectedCategoryChip: { backgroundColor: "#2979b0" },
+  selectedCardChip: { backgroundColor: "#ff9800" },
   categoryText: { color: "#666" },
   selectedText: { color: "#fff", fontWeight: "bold" },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-    gap: 10,
-  },
+  buttonRow: { flexDirection: "row", justifyContent: "space-between", gap: 10 },
   saveButton: {
     backgroundColor: "#2979b0",
     padding: 18,
